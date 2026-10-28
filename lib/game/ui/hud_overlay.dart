@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pokeclase20263/game/gallery_view.dart';
 
 import '../photo/photo_result.dart';
 import '../snap_game.dart';
@@ -42,9 +43,38 @@ class HudOverlay extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.bottomLeft,
-              child: ValueListenableBuilder<PhotoResult?>(
-                valueListenable: game.lastPhoto,
-                builder: (_, photo, __) => _LastPhotoInfo(photo),
+              child: Row(
+                children: [
+                  //Miniatura de la ultima captura
+                  ValueListenableBuilder<Uint8List?>(
+                    valueListenable: game.lastScreenshot, 
+                    builder: (_, bytes, _){
+                      if (bytes == null) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => GalleryView())
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              bytes,
+                              width: 96,
+                              height: 64,
+                              fit: BoxFit.cover,
+                            )
+                          )
+                        ),
+                      );
+                    }
+                  ),
+                  ValueListenableBuilder<PhotoResult?>(
+                    valueListenable: game.lastPhoto,
+                    builder: (_, photo, __) => _LastPhotoInfo(photo),
+                  ),
+                ],
               ),
             ),
             Align(

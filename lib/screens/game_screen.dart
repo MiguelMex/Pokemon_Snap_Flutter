@@ -6,6 +6,8 @@ import '../game/snap_game.dart';
 import '../game/ui/hud_overlay.dart';
 import '../game/ui/results_overlay.dart';
 
+import 'package:screenshot/screenshot.dart';
+
 /// Pantalla que aloja el juego. Fuerza horizontal y pantalla completa
 /// mientras esta abierta, y restaura todo al salir (el Pokedex sigue vertical).
 class GameScreen extends StatefulWidget {
@@ -44,18 +46,21 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GameWidget<SnapGame>(
-        key: ObjectKey(_game),
-        game: _game,
-        initialActiveOverlays: const [SnapGame.hudOverlay],
-        overlayBuilderMap: {
-          SnapGame.hudOverlay: (context, game) => HudOverlay(game: game, onExit: _exit),
-          SnapGame.resultsOverlay: (context, game) => ResultsOverlay(
-                game: game,
-                onRestart: _restart,
-                onExit: _exit,
-              ),
-        },
+      body: Screenshot(
+        controller: _game.screenshotController,
+        child: GameWidget<SnapGame>(
+          key: ObjectKey(_game),
+          game: _game,
+          initialActiveOverlays: const [SnapGame.hudOverlay],
+          overlayBuilderMap: {
+            SnapGame.hudOverlay: (context, game) => HudOverlay(game: game, onExit: _exit),
+            SnapGame.resultsOverlay: (context, game) => ResultsOverlay(
+                  game: game,
+                  onRestart: _restart,
+                  onExit: _exit,
+                ),
+          },
+        ),
       ),
     );
   }

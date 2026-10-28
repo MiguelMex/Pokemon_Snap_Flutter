@@ -1,6 +1,11 @@
+
+
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pokeclase20263/game/gallery_repository.dart';
+import 'package:pokeclase20263/game/photo/photo_cropper.dart';
 
 import 'components/camera_reticle.dart';
 import 'components/photo_flash.dart';
@@ -14,6 +19,13 @@ import 'photo/photo_result.dart';
 import 'scene/placeholder_scenery.dart';
 import 'scene/scenery_layer.dart';
 import 'scene/spawn_slot.dart';
+
+//Para la captura de pantalla
+import 'package:screenshot/screenshot.dart';
+import 'dart:typed_data';
+import 'package:gal/gal.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 /// Juego principal. Escena ESTATICA: la camara no se mueve y los Pokemon
 /// salen desde los bordes/arbustos del escenario.
@@ -45,6 +57,15 @@ class SnapGame extends FlameGame {
 
   CameraReticle? _reticle;
   PokemonSpawner? _spawner;
+
+  //Para la screenshot
+  final ScreenshotController screenshotController = ScreenshotController();
+  //Key pública para la screenshot
+  final GlobalKey screenshotKey = GlobalKey();
+  //Última captura en base 64
+  final ValueNotifier<Uint8List?> lastScreenshot = ValueNotifier(null);
+  //La galeria de imagenes
+  final ValueNotifier<List<Uint8List>> galleryImages = ValueNotifier([]);
 
   @override
   Future<void> onLoad() async {
@@ -87,22 +108,64 @@ class SnapGame extends FlameGame {
 
     photosLeft.value -= 1;
 
+    //Congelar camara
+    final frameAtShot = reticle.frameRect;
+
     final result = PhotoEvaluator.evaluate(
-      frame: reticle.frameRect,
+      frame: frameAtShot,
       actors: world.children.whereType<PokemonActor>(),
     );
-
-    camera.viewport.add(PhotoFlash());
-    for (final subject in result.subjects) {
-      subject.actor.reactToFlash();
-    }
 
     album.add(result);
     totalScore.value += result.total;
     lastPhoto.value = result;
 
-    if (photosLeft.value == 0) finishSession();
+    //Capturamos el siguiente frame (el que sigue al flash)
+    //Si era la última foto, mostramos el overlay después de capturar
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await captureImage(frameAtShot);
+
+      camera.viewport.add(PhotoFlash());
+    for (final subject in result.subjects) {
+      subject.actor.reactToFlash();
+    }
+
+      if (photosLeft.value == 0) finishSession();
+    });
+
     return result;
+  }
+
+  Future<void> captureImage(Rect frameRect) async {
+    const pixelRatio = 2.0;
+    try{
+      final bytes = await screenshotController.capture(
+        pixelRatio: pixelRatio,
+      );
+
+      if (bytes == null || bytes.isEmpty){
+        debugPrint('captureImage: bytes vacios');
+        return;
+      }
+
+      final cropped = await PhotoCropper.cropToFrame(
+        fullBytes: bytes, 
+        frameRect: frameRect, 
+        gameSize: GameConfig.resolution, 
+        pixelRatio: pixelRatio
+      );
+      if (cropped == null || cropped.isEmpty){
+        debugPrint('captureImage: recorte vacio');
+        return;
+      }
+
+      await GalleryRepository.instance.add(cropped);
+      lastScreenshot.value = cropped;
+
+      debugPrint('Screenshot OK (${cropped.length} bytes)');
+    } catch (e){
+      debugPrint('Error inesperado capturando screenshot: $e');
+    }
   }
 
   void finishSession() {

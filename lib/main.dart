@@ -1,10 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pokeclase20263/game/gallery_repository.dart';
 import 'package:pokeclase20263/providers/poke_api_provider.dart';
 import 'package:pokeclase20263/screens/generation_list_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(const AppState());
+//void main() => runApp(const AppState());
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GalleryRepository.instance.init();
+  runApp(const AppState());
+}
 
 class AppState extends StatelessWidget {
   const AppState({super.key});

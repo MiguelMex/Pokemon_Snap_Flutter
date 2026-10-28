@@ -2,6 +2,7 @@ import 'dart:convert';
  
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pokeclase20263/game/gallery_view.dart';
 import 'package:pokeclase20263/models/generation_list_response.dart';
 import 'package:pokeclase20263/providers/poke_api_provider.dart';
 import 'package:pokeclase20263/screens/game_screen.dart';
@@ -24,6 +25,10 @@ class GenerationListScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: _SnapEntryCard(),
+          ),
+          const Padding(
+            padding:EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: _GaleryEntryCard(),
           ),
           Expanded(
             child: FutureBuilder<http.Response>(
@@ -98,6 +103,71 @@ class _SnapEntryCard extends StatelessWidget {
                     ),
                     Text(
                       'Toma fotos a los Pokémon salvajes',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.play_arrow_rounded,
+                size: 32,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//Tarjeta para vista de fotografias
+class _GaleryEntryCard extends StatelessWidget {
+  const _GaleryEntryCard();
+ 
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      color: theme.colorScheme.primaryContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const GalleryView()),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Icon(
+                Icons.photo_album,
+                size: 36,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Galeria de fotografias',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    Text(
+                      'Mira las fotografias de que has tomado',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onPrimaryContainer,
                       ),
