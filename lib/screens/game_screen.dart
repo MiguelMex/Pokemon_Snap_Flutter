@@ -46,21 +46,43 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Screenshot(
-        controller: _game.screenshotController,
-        child: GameWidget<SnapGame>(
-          key: ObjectKey(_game),
-          game: _game,
-          initialActiveOverlays: const [SnapGame.hudOverlay],
-          overlayBuilderMap: {
-            SnapGame.hudOverlay: (context, game) => HudOverlay(game: game, onExit: _exit),
-            SnapGame.resultsOverlay: (context, game) => ResultsOverlay(
-                  game: game,
-                  onRestart: _restart,
-                  onExit: _exit,
-                ),
-          },
-        ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Screenshot(
+              controller: _game.screenshotController,
+              child: GameWidget<SnapGame>(
+                key: ObjectKey(_game),
+                game: _game,
+              ),
+            ),
+          ),
+
+          //HUD
+          Positioned.fill(
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _game.hudVisible,
+              builder: (_, visible, __) => visible ? HudOverlay(
+                game: _game,
+                onExit: _exit
+              )
+              : const SizedBox.shrink()
+            ),
+          ),
+
+          //Resultados
+          Positioned.fill(
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _game.resultsVisible,
+              builder: (_, visible, __) => visible ? ResultsOverlay(
+                game: _game,
+                onRestart: _restart,
+                onExit: _exit,
+              )
+              : const SizedBox.shrink(),
+            )  
+          ),
+        ],
       ),
     );
   }

@@ -11,7 +11,7 @@ import '../config/game_config.dart';
 ///
 /// Como la camara esta fija y anclada arriba-izquierda, las coordenadas del
 /// viewport y del mundo coinciden (ambas 1280x720).
-class CameraReticle extends PositionComponent with DragCallbacks {
+class CameraReticle extends PositionComponent with DragCallbacks, HasVisibility {
   CameraReticle()
       : super(position: Vector2.zero(), size: GameConfig.resolution, priority: 10);
 

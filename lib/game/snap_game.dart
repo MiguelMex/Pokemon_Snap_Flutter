@@ -42,8 +42,13 @@ class SnapGame extends FlameGame {
           ),
         );
 
-  static const String hudOverlay = 'hud';
-  static const String resultsOverlay = 'results';
+  //Visibilidad de la UI, la screenshot solo captura el canvas del juego
+  //Estos widgets no aparecen en la foto
+  final ValueNotifier<bool> hudVisible = ValueNotifier(true);
+  final ValueNotifier<bool> resultsVisible = ValueNotifier(false);
+
+  // static const String hudOverlay = 'hud';
+  // static const String resultsOverlay = 'results';
 
   // Estado que escucha la UI de Flutter
   final ValueNotifier<int> photosLeft = ValueNotifier(GameConfig.photosPerSession);
@@ -120,10 +125,17 @@ class SnapGame extends FlameGame {
     totalScore.value += result.total;
     lastPhoto.value = result;
 
+    //Ocultar visor para que el proximo frame se pinte sin el
+    reticle.isVisible = false;
+
     //Capturamos el siguiente frame (el que sigue al flash)
     //Si era la última foto, mostramos el overlay después de capturar
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await captureImage(frameAtShot);
+      try{
+        await captureImage(frameAtShot);
+      } finally {
+        reticle.isVisible = true;
+      }
 
       camera.viewport.add(PhotoFlash());
     for (final subject in result.subjects) {
@@ -169,7 +181,8 @@ class SnapGame extends FlameGame {
   }
 
   void finishSession() {
-    overlays.add(resultsOverlay);
+    //overlays.add(resultsOverlay);
+    resultsVisible.value = true;
     pauseEngine();
   }
 
